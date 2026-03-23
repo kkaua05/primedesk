@@ -27,6 +27,15 @@
                         <input type="date" id="fin_pagamento" name="data_pagamento" class="form-control">
                     </div>
                     <div class="form-group">
+                        <label>Forma de Pagamento</label>
+                        <select id="fin_forma_pagamento" name="forma_pagamento" class="form-control" required>
+                            <option value="Pix">Pix</option>
+                            <option value="Boleto">Boleto</option>
+                            <option value="Especie">Espécie</option>
+                            <option value="Permuta">Permuta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Status</label>
                         <select id="fin_status" name="status" class="form-control" required>
                             <option value="Pendente">Pendente</option>
