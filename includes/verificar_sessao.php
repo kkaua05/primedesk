@@ -20,15 +20,12 @@ function verificarNivel($nivelPermitido) {
     if (!isset($_SESSION['usuario_nivel'])) {
         return false;
     }
-    
     if ($_SESSION['usuario_nivel'] === 'Administrador') {
         return true;
     }
-    
     if (is_array($nivelPermitido)) {
         return in_array($_SESSION['usuario_nivel'], $nivelPermitido);
     }
-    
     return $_SESSION['usuario_nivel'] === $nivelPermitido;
 }
 
@@ -37,14 +34,11 @@ function verificarPermissao($pagina) {
     if (!isset($_SESSION['usuario_nivel'])) {
         return false;
     }
-    
-    $paginasFuncionario = ['dashboard', 'clientes', 'cadastrar_cliente', 'editar_cliente', 
-                           'visualizar_cliente', 'financeiro_clientes', 'financeiro_mensal'];
-    
+    $paginasFuncionario = ['dashboard', 'clientes', 'cadastrar_cliente', 'editar_cliente',
+                           'visualizar_cliente', 'financeiro_clientes', 'financeiro_mensal', 'agenda'];
     if ($_SESSION['usuario_nivel'] === 'Administrador') {
         return true;
     }
-    
     return in_array($pagina, $paginasFuncionario);
 }
 ?>
