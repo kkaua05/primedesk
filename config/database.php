@@ -5,10 +5,9 @@ class Database {
     private $username = "root";
     private $password = "";
     private $conn;
-
+    
     public function getConnection() {
         $this->conn = null;
-        
         try {
             $this->conn = new PDO(
                 "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4",
@@ -23,7 +22,6 @@ class Database {
         } catch(PDOException $exception) {
             echo "Erro de conexão: " . $exception->getMessage();
         }
-        
         return $this->conn;
     }
 }
