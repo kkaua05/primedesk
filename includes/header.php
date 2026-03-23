@@ -39,15 +39,15 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
         <div class="top-bar">
             <div class="logo-mobile">
                 <i class="fas fa-bars" onclick="toggleSidebar()"></i>
-                <span>Rtcom Consultoria</span>
+                <span>PrimeDesk</span>
             </div>
             <div class="user-info">
                 <span><i class="fas fa-user-circle"></i> <?php echo htmlspecialchars($_SESSION['usuario_nome']); ?></span>
-                <span class="badge <?php echo ($_SESSION['usuario_nivel'] === 'Administrador') ? 'badge-admin' : 'badge-funcionario'; ?>">
+                <span class="badge <?php echo ($_SESSION['usuario_nivel'] === 'Administrador') ? 'bg-danger' : 'bg-warning'; ?>">
                     <?php echo strtoupper($_SESSION['usuario_nivel']); ?>
                 </span>
                 <span class="date"><i class="fas fa-calendar"></i> <?php echo date('d/m/Y H:i'); ?></span>
-                <a href="logout.php" class="btn-sair" title="Sair do Sistema">
+                <a href="logout.php" class="btn btn-sm btn-danger" title="Sair do Sistema">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
             </div>
