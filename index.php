@@ -1,25 +1,22 @@
 <?php
-// Iniciar sessão apenas se não existir
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Incluir verificação de sessão (contém as funções)
 require_once 'includes/verificar_sessao.php';
 
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
-// Verificar permissão da página
 if (!verificarPermissao($page)) {
     echo "<script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Acesso Negado!',
-            text: 'Você não tem permissão para acessar esta página.',
-            confirmButtonText: 'Voltar'
-        }).then(function() {
-            window.location.href = 'index.php?page=dashboard';
-        });
+    Swal.fire({
+        icon: 'error',
+        title: 'Acesso Negado!',
+        text: 'Você não tem permissão para acessar esta página.',
+        confirmButtonText: 'Voltar'
+    }).then(function() {
+        window.location.href = 'index.php?page=dashboard';
+    });
     </script>";
     exit;
 }
@@ -51,12 +48,15 @@ switch($page) {
     case 'relatorios':
         include 'pages/relatorios.php';
         break;
+    case 'agenda':
+        include 'pages/agenda.php';
+        break;
+    case 'usuarios':
+        include 'pages/usuarios.php';
+        break;
     default:
         include 'pages/dashboard.php';
-
-     case 'agenda':
-        include 'pages/agenda.php';
-    break;
+        break;
 }
 
 include 'includes/footer.php';
