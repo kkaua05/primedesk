@@ -25,6 +25,12 @@ $usuarioNivel = $_SESSION['usuario_nivel'] ?? 'Funcionario';
                 <span>Financeiro Mensal</span>
             </a>
         </li>
+        <li>
+            <a href="index.php?page=agenda" class="<?php echo ($page == 'agenda') ? 'active' : ''; ?>">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Agenda</span>
+            </a>
+        </li>
         <?php if ($usuarioNivel === 'Administrador'): ?>
         <li>
             <a href="index.php?page=relatorios" class="<?php echo ($page == 'relatorios') ? 'active' : ''; ?>">
@@ -32,14 +38,12 @@ $usuarioNivel = $_SESSION['usuario_nivel'] ?? 'Funcionario';
                 <span>Relatórios</span>
             </a>
         </li>
-
         <li>
-    <a href="index.php?page=agenda" class="<?php echo ($page == 'agenda') ? 'active' : ''; ?>">
-        <i class="fas fa-calendar-alt"></i>
-        <span>Agenda</span>
-    </a>
-</li>
-
+            <a href="index.php?page=usuarios" class="<?php echo ($page == 'usuarios') ? 'active' : ''; ?>">
+                <i class="fas fa-users-cog"></i>
+                <span>Usuários</span>
+            </a>
+        </li>
         <?php endif; ?>
     </ul>
     <div class="sidebar-footer">
