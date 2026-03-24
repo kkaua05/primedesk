@@ -14,18 +14,16 @@ $query = "SELECT * FROM clientes WHERE 1=1";
 $params = [];
 
 if ($filtroNome) {
-    $query .= " AND nome ILIKE $".(count($params) + 1);
-    $params[] = "%$filtroNome%";
+    $query .= " AND nome LIKE :nome";
+    $params[':nome'] = "%$filtroNome%";
 }
-
 if ($filtroOperadora) {
-    $query .= " AND operadora = $".(count($params) + 1);
-    $params[] = $filtroOperadora;
+    $query .= " AND operadora = :operadora";
+    $params[':operadora'] = $filtroOperadora;
 }
-
 if ($filtroVendedor) {
-    $query .= " AND vendedor ILIKE $".(count($params) + 1);
-    $params[] = "%$filtroVendedor%";
+    $query .= " AND vendedor LIKE :vendedor";
+    $params[':vendedor'] = "%$filtroVendedor%";
 }
 
 $query .= " ORDER BY id DESC";
@@ -34,14 +32,12 @@ $stmt = $conn->prepare($query);
 $stmt->execute($params);
 $clientes = $stmt->fetchAll();
 ?>
-
 <div class="page-header">
     <h2><i class="fas fa-users"></i> Gestão de Clientes</h2>
     <a href="index.php?page=cadastrar_cliente" class="btn btn-primary">
         <i class="fas fa-plus"></i> Novo Cliente
     </a>
 </div>
-
 <div class="table-container">
     <div class="table-header">
         <h3>Lista de Clientes</h3>
@@ -95,15 +91,15 @@ $clientes = $stmt->fetchAll();
                         </span>
                     </td>
                     <td>
-                        <a href="index.php?page=editar_cliente&id=<?php echo $c['id']; ?>" 
+                        <a href="index.php?page=editar_cliente&id=<?php echo $c['id']; ?>"
                            class="btn btn-sm btn-primary" title="Editar">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="index.php?page=financeiro_clientes&id=<?php echo $c['id']; ?>" 
+                        <a href="index.php?page=financeiro_clientes&id=<?php echo $c['id']; ?>"
                            class="btn btn-sm btn-success" title="Financeiro">
                             <i class="fas fa-dollar-sign"></i>
                         </a>
-                        <button onclick="deletarCliente(<?php echo $c['id']; ?>, '<?php echo htmlspecialchars($c['nome']); ?>')" 
+                        <button onclick="deletarCliente(<?php echo $c['id']; ?>, '<?php echo htmlspecialchars($c['nome']); ?>')"
                                 class="btn btn-sm btn-danger" title="Excluir">
                             <i class="fas fa-trash"></i>
                         </button>
