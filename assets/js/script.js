@@ -1,5 +1,5 @@
 /**
- * Rtcom Consultoria - Sistema de Gestão
+ * PrimeDesk - Sistema de Gestão
  * Script JavaScript Principal
  */
 
@@ -28,7 +28,6 @@ function abrirModalFinanceiro() {
     const modal = document.getElementById('modalFinanceiro');
     const modalTitle = document.getElementById('modalTitle');
     const form = document.getElementById('formFinanceiro');
-    
     if (modal && modalTitle && form) {
         modalTitle.innerText = 'Novo Lançamento Financeiro';
         document.getElementById('fin_id').value = '';
@@ -47,7 +46,6 @@ function editarFinanceiro(id) {
             if (data.status === 'success') {
                 const modal = document.getElementById('modalFinanceiro');
                 const modalTitle = document.getElementById('modalTitle');
-                
                 if (modal && modalTitle) {
                     modalTitle.innerText = 'Editar Lançamento';
                     document.getElementById('fin_id').value = data.data.id;
@@ -82,7 +80,6 @@ const formCliente = document.getElementById('formCliente');
 if (formCliente) {
     formCliente.addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const formData = new FormData(formCliente);
         const data = Object.fromEntries(formData.entries());
         
@@ -131,8 +128,8 @@ if (formCliente) {
         
         fetch('actions/salvar_cliente.php', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json' 
+            headers: {
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         })
@@ -178,7 +175,6 @@ const formFinanceiro = document.getElementById('formFinanceiro');
 if (formFinanceiro) {
     formFinanceiro.addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const formData = new FormData(formFinanceiro);
         const data = Object.fromEntries(formData.entries());
         
@@ -213,16 +209,6 @@ if (formFinanceiro) {
             return;
         }
         
-        if (!data.forma_pagamento || data.forma_pagamento === '') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atenção!',
-                text: 'Selecione a forma de pagamento!',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-        
         // Mostrar loading
         Swal.fire({
             title: 'Salvando...',
@@ -235,8 +221,8 @@ if (formFinanceiro) {
         
         fetch('actions/salvar_financeiro.php', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json' 
+            headers: {
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         })
@@ -282,14 +268,13 @@ if (formFinanceiro) {
 function deletarCliente(id, nome) {
     Swal.fire({
         title: 'Tem certeza?',
-        html: 'Deseja realmente excluir o cliente <strong>"' + nome + '"</strong>?<br><br>' +
-               '<span style="color: #ef4444;">Esta ação não pode ser desfeita!</span>',
+        html: 'Deseja realmente excluir o cliente "' + nome + '"?<br>Esta ação não pode ser desfeita!',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        confirmButtonText: '<i class="fas fa-trash"></i> Sim, excluir!',
-        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar',
         reverseButtons: true
     }).then(function(result) {
         if (result.isConfirmed) {
@@ -301,11 +286,10 @@ function deletarCliente(id, nome) {
                     Swal.showLoading();
                 }
             });
-            
             fetch('actions/deletar_cliente.php', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' 
+                headers: {
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ id: id })
             })
@@ -351,7 +335,6 @@ function deletarCliente(id, nome) {
 function deletarFinanceiro(id) {
     const clienteIdField = document.getElementById('fin_cliente_id');
     const clienteId = clienteIdField ? clienteIdField.value : 0;
-    
     Swal.fire({
         title: 'Tem certeza?',
         text: 'Deseja realmente excluir este lançamento financeiro?',
@@ -359,8 +342,8 @@ function deletarFinanceiro(id) {
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        confirmButtonText: '<i class="fas fa-trash"></i> Sim, excluir!',
-        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar',
         reverseButtons: true
     }).then(function(result) {
         if (result.isConfirmed) {
@@ -372,15 +355,14 @@ function deletarFinanceiro(id) {
                     Swal.showLoading();
                 }
             });
-            
             fetch('actions/deletar_financeiro.php', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' 
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    id: id, 
-                    cliente_id: clienteId 
+                body: JSON.stringify({
+                    id: id,
+                    cliente_id: clienteId
                 })
             })
             .then(function(response) {
@@ -424,7 +406,6 @@ function deletarFinanceiro(id) {
 // Exportar Tabela
 function exportarTabela(tabelaId, nome, tipo) {
     if (!tipo) tipo = 'excel';
-    
     const tabela = document.getElementById(tabelaId);
     
     if (!tabela) {
@@ -490,16 +471,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cpfInput) {
         cpfInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
-            
-            // Limitar a 11 dígitos
             if (value.length > 11) {
                 value = value.substring(0, 11);
             }
-            
             value = value.replace(/(\d{3})(\d)/, '$1.$2');
             value = value.replace(/(\d{3})(\d)/, '$1.$2');
             value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-            
             e.target.value = value;
         });
     }
@@ -509,24 +486,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contatoInput) {
         contatoInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
-            
-            // Limitar a 11 dígitos
             if (value.length > 11) {
                 value = value.substring(0, 11);
             }
-            
             if (value.length > 10) {
-                // Celular (11 dígitos)
                 value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
             } else if (value.length > 5) {
-                // Telefone fixo (10 dígitos)
                 value = value.replace(/^(\d{2})(\d{4})(\d{4}).*/, '($1) $2-$3');
             } else if (value.length > 2) {
                 value = value.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
             } else {
                 value = value.replace(/^(\d{0,2}).*/, '($1');
             }
-            
             e.target.value = value;
         });
     }
@@ -550,5 +521,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Console de Debug
-console.log('Rtcom Consultoria - Sistema Carregado');
+console.log('PrimeDesk - Sistema Carregado');
