@@ -38,6 +38,7 @@ $clientes = $stmt->fetchAll();
         <i class="fas fa-plus"></i> Novo Cliente
     </a>
 </div>
+
 <div class="table-container">
     <div class="table-header">
         <h3>Lista de Clientes</h3>
@@ -79,7 +80,7 @@ $clientes = $stmt->fetchAll();
                 <?php foreach($clientes as $c): ?>
                 <tr>
                     <td><?php echo $c['id']; ?></td>
-                    <td><?php echo htmlspecialchars($c['nome']); ?></td>
+                    <td><strong><?php echo htmlspecialchars($c['nome']); ?></strong></td>
                     <td><?php echo htmlspecialchars($c['cpf']); ?></td>
                     <td><?php echo htmlspecialchars($c['contato']); ?></td>
                     <td><span class="badge bg-warning"><?php echo htmlspecialchars($c['operadora']); ?></span></td>
@@ -91,18 +92,29 @@ $clientes = $stmt->fetchAll();
                         </span>
                     </td>
                     <td>
-                        <a href="index.php?page=editar_cliente&id=<?php echo $c['id']; ?>"
-                           class="btn btn-sm btn-primary" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="index.php?page=financeiro_clientes&id=<?php echo $c['id']; ?>"
-                           class="btn btn-sm btn-success" title="Financeiro">
-                            <i class="fas fa-dollar-sign"></i>
-                        </a>
-                        <button onclick="deletarCliente(<?php echo $c['id']; ?>, '<?php echo htmlspecialchars($c['nome']); ?>')"
-                                class="btn btn-sm btn-danger" title="Excluir">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="btn-group">
+                            <a href="index.php?page=visualizar_cliente&id=<?php echo $c['id']; ?>" 
+                               class="btn btn-sm btn-info" 
+                               title="Visualizar Detalhes"
+                               style="background: #3b82f6; color: white;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="index.php?page=editar_cliente&id=<?php echo $c['id']; ?>" 
+                               class="btn btn-sm btn-primary" 
+                               title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="index.php?page=financeiro_clientes&id=<?php echo $c['id']; ?>" 
+                               class="btn btn-sm btn-success" 
+                               title="Financeiro">
+                                <i class="fas fa-dollar-sign"></i>
+                            </a>
+                            <button onclick="deletarCliente(<?php echo $c['id']; ?>, '<?php echo htmlspecialchars($c['nome']); ?>')" 
+                                    class="btn btn-sm btn-danger" 
+                                    title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -114,3 +126,13 @@ $clientes = $stmt->fetchAll();
         </tbody>
     </table>
 </div>
+
+<style>
+.btn-group {
+    display: inline-flex;
+    gap: 4px;
+}
+.btn-group .btn {
+    padding: 6px 10px;
+}
+</style>
