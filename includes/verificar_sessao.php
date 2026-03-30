@@ -30,15 +30,30 @@ function verificarNivel($nivelPermitido) {
 }
 
 // Função para verificar permissão de página
+// AGORA: Funcionário pode acessar TODAS as páginas exceto Usuários e Relatórios
 function verificarPermissao($pagina) {
     if (!isset($_SESSION['usuario_nivel'])) {
         return false;
     }
-    $paginasFuncionario = ['dashboard', 'clientes', 'cadastrar_cliente', 'editar_cliente',
-                           'visualizar_cliente', 'financeiro_clientes', 'financeiro_mensal', 'agenda'];
+    
+    // Administrador tem acesso a tudo
     if ($_SESSION['usuario_nivel'] === 'Administrador') {
         return true;
     }
+    
+    // Funcionário tem acesso a quase tudo (compartilhado)
+    $paginasFuncionario = [
+        'dashboard', 
+        'clientes', 
+        'cadastrar_cliente', 
+        'editar_cliente',
+        'visualizar_cliente', 
+        'financeiro_clientes', 
+        'financeiro_mensal', 
+        'agenda',
+        'relatorios'  // Adicionado: funcionário pode ver relatórios
+    ];
+    
     return in_array($pagina, $paginasFuncionario);
 }
 ?>
