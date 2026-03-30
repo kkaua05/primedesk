@@ -17,15 +17,15 @@ $total_dias = date('t', mktime(0, 0, 0, $mes, 1, $ano));
 $nomes_meses = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-// Buscar tarefas do mês
-$stmt = $conn->prepare("SELECT a.*, c.nome as cliente_nome 
+// Buscar TODAS as tarefas do mês (compartilhado entre todos os usuários)
+$stmt = $conn->prepare("SELECT a.*, c.nome as cliente_nome, u.nome as nome_usuario
                         FROM agenda a
                         LEFT JOIN clientes c ON a.cliente_id = c.id
-                        WHERE a.usuario_id = ?
-                        AND MONTH(a.data_inicio) = ?
+                        LEFT JOIN usuarios u ON a.usuario_id = u.id
+                        WHERE MONTH(a.data_inicio) = ?
                         AND YEAR(a.data_inicio) = ?
                         ORDER BY a.data_inicio, a.hora_inicio");
-$stmt->execute([$usuario_id, $mes, $ano]);
+$stmt->execute([$mes, $ano]);
 $tarefas_mes = $stmt->fetchAll();
 
 // Agrupar tarefas por dia
@@ -38,34 +38,40 @@ foreach ($tarefas_mes as $tarefa) {
     $tarefas_por_dia[$dia][] = $tarefa;
 }
 
-// Contadores
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM agenda WHERE usuario_id = ? AND status = 'Pendente'");
-$stmt->execute([$usuario_id]);
+// Contadores - TODAS as tarefas do sistema
+$stmt = $conn->query("SELECT COUNT(*) as total FROM agenda WHERE status = 'Pendente'");
 $tarefas_pendentes = $stmt->fetch()['total'];
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM agenda WHERE usuario_id = ? AND status = 'Concluido'");
-$stmt->execute([$usuario_id]);
+$stmt = $conn->query("SELECT COUNT(*) as total FROM agenda WHERE status = 'Concluido'");
 $tarefas_concluidas = $stmt->fetch()['total'];
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM agenda WHERE usuario_id = ? AND prioridade = 'Urgente' AND status != 'Concluido'");
-$stmt->execute([$usuario_id]);
+$stmt = $conn->query("SELECT COUNT(*) as total FROM agenda WHERE prioridade = 'Urgente' AND status != 'Concluido'");
 $tarefas_urgentes = $stmt->fetch()['total'];
 
-// Tarefas de hoje
+// Tarefas de hoje - TODAS as tarefas
 $hoje = date('Y-m-d');
-$stmt = $conn->prepare("SELECT * FROM agenda WHERE usuario_id = ? AND data_inicio = ? ORDER BY hora_inicio");
-$stmt->execute([$usuario_id, $hoje]);
+$stmt = $conn->prepare("SELECT a.*, c.nome as cliente_nome, u.nome as nome_usuario 
+                        FROM agenda a
+                        LEFT JOIN clientes c ON a.cliente_id = c.id
+                        LEFT JOIN usuarios u ON a.usuario_id = u.id
+                        WHERE a.data_inicio = ? 
+                        ORDER BY a.hora_inicio");
+$stmt->execute([$hoje]);
 $tarefas_hoje = $stmt->fetchAll();
 
 // Buscar todos os clientes para o select
 $stmt = $conn->query("SELECT id, nome FROM clientes WHERE status = 'Ativo' ORDER BY nome");
 $clientes = $stmt->fetchAll();
+
+// Buscar todos os usuários para filtro (opcional)
+$stmt = $conn->query("SELECT id, nome, nivel FROM usuarios WHERE status = 'Ativo' ORDER BY nome");
+$usuarios = $stmt->fetchAll();
 ?>
 <div class="page-header">
     <div>
         <h2><i class="fas fa-calendar-alt"></i> Agenda & Tarefas</h2>
         <p style="color: var(--text-light); margin-top: 5px;">
-            Gerencie suas tarefas e compromissos
+            Gerencie tarefas e compromissos da equipe
         </p>
     </div>
     <div>
@@ -79,15 +85,15 @@ $clientes = $stmt->fetchAll();
 <div class="cards-grid">
     <div class="card">
         <h3><i class="fas fa-tasks"></i> Tarefas Pendentes</h3>
-        <div class="value" id="countPendentes"><?php echo $tarefas_pendentes; ?></div>
+        <div class="value"><?php echo $tarefas_pendentes; ?></div>
     </div>
     <div class="card success">
         <h3><i class="fas fa-check-circle"></i> Concluídas</h3>
-        <div class="value" id="countConcluidas"><?php echo $tarefas_concluidas; ?></div>
+        <div class="value"><?php echo $tarefas_concluidas; ?></div>
     </div>
     <div class="card danger">
         <h3><i class="fas fa-exclamation-triangle"></i> Urgentes</h3>
-        <div class="value" id="countUrgentes"><?php echo $tarefas_urgentes; ?></div>
+        <div class="value"><?php echo $tarefas_urgentes; ?></div>
     </div>
     <div class="card warning">
         <h3><i class="fas fa-calendar-day"></i> Hoje</h3>
@@ -112,6 +118,11 @@ $clientes = $stmt->fetchAll();
                     ?>;">
             <div style="flex: 1;">
                 <strong><?php echo htmlspecialchars($t['titulo']); ?></strong>
+                <?php if(isset($t['nome_usuario']) && $t['nome_usuario']): ?>
+                <span style="color: var(--text-light); margin-left: 10px; font-size: 0.85rem;">
+                    <i class="fas fa-user"></i> <?php echo htmlspecialchars($t['nome_usuario']); ?>
+                </span>
+                <?php endif; ?>
                 <?php if($t['hora_inicio']): ?>
                 <span style="color: var(--text-light); margin-left: 10px;">
                     <i class="fas fa-clock"></i> <?php echo date('H:i', strtotime($t['hora_inicio'])); ?>
@@ -638,6 +649,12 @@ function visualizarTarefa(id) {
                     <div class="visualizacao-item">
                         <div class="visualizacao-label"><i class="fas fa-user"></i> Cliente</div>
                         <div class="visualizacao-value">${t.cliente_nome}</div>
+                    </div>
+                    ` : ''}
+                    ${t.nome_usuario ? `
+                    <div class="visualizacao-item">
+                        <div class="visualizacao-label"><i class="fas fa-user-circle"></i> Criado por</div>
+                        <div class="visualizacao-value">${t.nome_usuario}</div>
                     </div>
                     ` : ''}
                 `;
