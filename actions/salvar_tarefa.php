@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 // Verificar se está logado
 if (!isset($_SESSION['usuario_id'])) {
     echo json_encode([
-        "status" => "error", 
+        "status" => "error",
         "message" => "Não autorizado. Faça login novamente."
     ]);
     exit;
@@ -59,35 +59,33 @@ try {
     
     if (isset($data['id']) && !empty($data['id'])) {
         // Atualizar tarefa existente
-        $query = "UPDATE agenda SET 
-                  titulo = :titulo,
-                  descricao = :descricao,
-                  categoria = :categoria,
-                  data_inicio = :data_inicio,
-                  data_fim = :data_fim,
-                  hora_inicio = :hora_inicio,
-                  hora_fim = :hora_fim,
-                  prioridade = :prioridade,
-                  status = :status,
-                  cliente_id = :cliente_id,
-                  lembrete = :lembrete
-                  WHERE id = :id AND usuario_id = :usuario_id";
-        
+        $query = "UPDATE agenda SET
+            titulo = :titulo,
+            descricao = :descricao,
+            categoria = :categoria,
+            data_inicio = :data_inicio,
+            data_fim = :data_fim,
+            hora_inicio = :hora_inicio,
+            hora_fim = :hora_fim,
+            prioridade = :prioridade,
+            status = :status,
+            cliente_id = :cliente_id,
+            lembrete = :lembrete
+            WHERE id = :id";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(":id", $data['id']);
         $mensagem = "Tarefa atualizada com sucesso!";
     } else {
-        // Criar nova tarefa
-        $query = "INSERT INTO agenda (usuario_id, titulo, descricao, categoria, data_inicio, data_fim, 
-                  hora_inicio, hora_fim, prioridade, status, cliente_id, lembrete) 
-                  VALUES (:usuario_id, :titulo, :descricao, :categoria, :data_inicio, :data_fim,
-                  :hora_inicio, :hora_fim, :prioridade, :status, :cliente_id, :lembrete)";
-        
+        // Criar nova tarefa (compartilhada - todos podem ver)
+        $query = "INSERT INTO agenda (usuario_id, titulo, descricao, categoria, data_inicio, data_fim,
+            hora_inicio, hora_fim, prioridade, status, cliente_id, lembrete)
+            VALUES (:usuario_id, :titulo, :descricao, :categoria, :data_inicio, :data_fim,
+            :hora_inicio, :hora_fim, :prioridade, :status, :cliente_id, :lembrete)";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(":usuario_id", $usuario_id);
         $mensagem = "Tarefa criada com sucesso!";
     }
-
+    
     $stmt->bindParam(":titulo", $titulo);
     $stmt->bindParam(":descricao", $descricao);
     $stmt->bindParam(":categoria", $categoria);
@@ -99,13 +97,13 @@ try {
     $stmt->bindParam(":status", $status);
     $stmt->bindParam(":cliente_id", $cliente_id);
     $stmt->bindParam(":lembrete", $lembrete);
-
+    
     if ($stmt->execute()) {
         // Criar notificação se for nova tarefa
         if (!isset($data['id'])) {
             try {
-                $stmt_notif = $conn->prepare("INSERT INTO notificacoes (usuario_id, titulo, mensagem, tipo) 
-                                        VALUES (?, ?, ?, ?)");
+                $stmt_notif = $conn->prepare("INSERT INTO notificacoes (usuario_id, titulo, mensagem, tipo)
+                    VALUES (?, ?, ?, ?)");
                 $stmt_notif->execute([$usuario_id, 'Nova Tarefa', $titulo, 'info']);
             } catch (Exception $e) {
                 // Ignorar erro de notificação
@@ -113,19 +111,19 @@ try {
         }
         
         echo json_encode([
-            "status" => "success", 
+            "status" => "success",
             "message" => $mensagem
         ]);
     } else {
         echo json_encode([
-            "status" => "error", 
+            "status" => "error",
             "message" => "Erro ao executar query no banco de dados."
         ]);
     }
     
 } catch (Exception $e) {
     echo json_encode([
-        "status" => "error", 
+        "status" => "error",
         "message" => $e->getMessage()
     ]);
 }
