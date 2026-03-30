@@ -12,11 +12,15 @@ $database = new Database();
 $conn = $database->getConnection();
 
 $id = isset($_GET['id']) ? $_GET['id'] : 0;
-$usuario_id = $_SESSION['usuario_id'];
 
 try {
-    $stmt = $conn->prepare("SELECT * FROM agenda WHERE id = ? AND usuario_id = ?");
-    $stmt->execute([$id, $usuario_id]);
+    // Buscar tarefa com informações do usuário e cliente (compartilhado)
+    $stmt = $conn->prepare("SELECT a.*, c.nome as cliente_nome, u.nome as nome_usuario 
+                            FROM agenda a
+                            LEFT JOIN clientes c ON a.cliente_id = c.id
+                            LEFT JOIN usuarios u ON a.usuario_id = u.id
+                            WHERE a.id = ?");
+    $stmt->execute([$id]);
     $data = $stmt->fetch();
     
     if ($data) {
@@ -25,9 +29,15 @@ try {
             "data" => $data
         ]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Tarefa não encontrada"]);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Tarefa não encontrada"
+        ]);
     }
 } catch (Exception $e) {
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+    echo json_encode([
+        "status" => "error",
+        "message" => $e->getMessage()
+    ]);
 }
 ?>
