@@ -5,55 +5,49 @@ require_once 'includes/verificar_sessao.php';
 $database = new Database();
 $conn = $database->getConnection();
 
-// Total de clientes
+// Total de clientes - TODOS do sistema
 $stmt = $conn->query("SELECT COUNT(*) as total FROM clientes");
 $totalClientes = $stmt->fetch()['total'];
 
-// Clientes ativos
+// Clientes ativos - TODOS do sistema
 $stmt = $conn->query("SELECT COUNT(*) as total FROM clientes WHERE status = 'Ativo'");
 $clientesAtivos = $stmt->fetch()['total'];
 
-// Receita do mês atual (pagamentos recebidos este mês)
+// Receita do mês atual - TODOS os pagamentos do sistema
 $stmt = $conn->query("SELECT COALESCE(SUM(valor), 0) as total FROM financeiro
-WHERE MONTH(data_pagamento) = MONTH(CURRENT_DATE())
-AND YEAR(data_pagamento) = YEAR(CURRENT_DATE())
-AND status = 'Pago'");
+    WHERE MONTH(data_pagamento) = MONTH(CURRENT_DATE())
+    AND YEAR(data_pagamento) = YEAR(CURRENT_DATE())
+    AND status = 'Pago'");
 $receitaMes = $stmt->fetch()['total'];
 
-// Valor pendente (todos os pendentes independente do mês)
+// Valor pendente - TODOS do sistema
 $stmt = $conn->query("SELECT COALESCE(SUM(valor), 0) as total FROM financeiro WHERE status = 'Pendente'");
 $valorPendente = $stmt->fetch()['total'];
 
-// Total de serviços
+// Total de serviços - TODOS do sistema
 $stmt = $conn->query("SELECT COUNT(*) as total FROM financeiro");
 $totalServicos = $stmt->fetch()['total'];
 
-// Dados para gráfico de receita mensal (últimos 12 meses)
-$stmt = $conn->query("SELECT MONTH(data_pagamento) as mes, COALESCE(SUM(valor), 0) as total
-FROM financeiro
-WHERE status = 'Pago'
-AND YEAR(data_pagamento) = YEAR(CURRENT_DATE())
-GROUP BY MONTH(data_pagamento)
-ORDER BY mes");
+// Dados para gráfico de receita mensal - TODOS do sistema
+$stmt = $conn->query("SELECT MONTH(data_pagamento) as mes, SUM(valor) as total
+    FROM financeiro
+    WHERE status = 'Pago'
+    AND YEAR(data_pagamento) = YEAR(CURRENT_DATE())
+    GROUP BY MONTH(data_pagamento)
+    ORDER BY mes");
 $receitaMensal = $stmt->fetchAll();
 
-// Preparar array com todos os meses (preenchendo com 0 os que não têm dados)
-$mesesData = array_fill(0, 12, 0);
-foreach($receitaMensal as $r) {
-    $mesesData[$r['mes'] - 1] = (float)$r['total'];
-}
-
-// Dados para gráfico de operadoras
+// Dados para gráfico de operadoras - TODOS do sistema
 $stmt = $conn->query("SELECT operadora, COUNT(*) as count FROM clientes GROUP BY operadora");
 $operadoras = $stmt->fetchAll();
 
-// Últimos pagamentos recebidos
+// Últimos pagamentos recebidos - TODOS do sistema
 $stmt = $conn->query("SELECT f.*, c.nome as cliente_nome
-FROM financeiro f
-INNER JOIN clientes c ON f.cliente_id = c.id
-WHERE f.status = 'Pago'
-ORDER BY f.data_pagamento DESC
-LIMIT 5");
+    FROM financeiro f
+    INNER JOIN clientes c ON f.cliente_id = c.id
+    WHERE f.status = 'Pago'
+    ORDER BY f.data_pagamento DESC
+    LIMIT 5");
 $ultimosPagamentos = $stmt->fetchAll();
 ?>
 <div class="page-header">
@@ -136,92 +130,75 @@ $ultimosPagamentos = $stmt->fetchAll();
 </div>
 
 <script>
-// Dados iniciais do PHP
-let receitaChartData = <?php echo json_encode($mesesData); ?>;
-let operadoraLabels = <?php echo json_encode(array_column($operadoras, 'operadora')); ?>;
-let operadoraData = <?php echo json_encode(array_column($operadoras, 'count')); ?>;
-
 // Gráfico de Receita Mensal
-const receitaCtx = document.getElementById('receitaChart').getContext('2d');
-let receitaChart = new Chart(receitaCtx, {
+const receitaData = {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+    datasets: [{
+        label: 'Receita (R$)',
+        data: [<?php
+        $meses = array_fill(0, 12, 0);
+        foreach($receitaMensal as $r) {
+            $meses[$r['mes'] - 1] = $r['total'];
+        }
+        echo implode(',', $meses);
+        ?>],
+        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+        borderColor: 'rgba(37, 99, 235, 1)',
+        borderWidth: 2,
+        tension: 0.4
+    }]
+};
+
+new Chart(document.getElementById('receitaChart'), {
     type: 'line',
-    data: {
-        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-        datasets: [{
-            label: 'Receita (R$)',
-            data: receitaChartData,
-            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-            borderColor: 'rgba(37, 99, 235, 1)',
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: 'rgba(37, 99, 235, 1)',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6
-        }]
-    },
+    data: receitaData,
     options: {
         responsive: true,
-        maintainAspectRatio: true,
         plugins: {
             legend: {
                 display: true,
                 position: 'top'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        if (context.parsed.y !== null) {
-                            label += new Intl.NumberFormat('pt-BR', { 
-                                style: 'currency', 
-                                currency: 'BRL' 
-                            }).format(context.parsed.y);
-                        }
-                        return label;
-                    }
-                }
             }
         },
         scales: {
             y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return 'R$ ' + value.toLocaleString('pt-BR');
-                    }
-                }
+                beginAtZero: true
             }
         }
     }
 });
 
 // Gráfico de Operadoras
-const operadoraCtx = document.getElementById('operadoraChart').getContext('2d');
-let operadoraChart = new Chart(operadoraCtx, {
+const operadoraData = {
+    labels: [<?php
+    $labels = [];
+    foreach($operadoras as $o) {
+        $labels[] = "'" . $o['operadora'] . "'";
+    }
+    echo implode(',', $labels);
+    ?>],
+    datasets: [{
+        data: [<?php
+        $values = [];
+        foreach($operadoras as $o) {
+            $values[] = $o['count'];
+        }
+        echo implode(',', $values);
+        ?>],
+        backgroundColor: [
+            'rgba(0, 60, 255, 0.8)',
+            'rgba(98, 0, 255, 0.8)',
+            'rgba(245, 11, 11, 0.8)',
+            'rgba(107, 114, 128, 0.8)'
+        ]
+    }]
+};
+
+new Chart(document.getElementById('operadoraChart'), {
     type: 'doughnut',
-    data: {
-        labels: operadoraLabels,
-        datasets: [{
-            data: operadoraData,
-            backgroundColor: [
-                'rgba(59, 130, 246, 0.8)',
-                'rgba(16, 185, 129, 0.8)',
-                'rgba(245, 158, 11, 0.8)',
-                'rgba(239, 68, 68, 0.8)'
-            ],
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
+    data: operadoraData,
     options: {
         responsive: true,
-        maintainAspectRatio: true,
         plugins: {
             legend: {
                 position: 'bottom'
@@ -230,48 +207,29 @@ let operadoraChart = new Chart(operadoraCtx, {
     }
 });
 
-// Função para atualizar dashboard via AJAX
+// Atualizar Dashboard em tempo real (a cada 30 segundos)
 function atualizarDashboard() {
     fetch('actions/atualizar_dashboard.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                // Atualizar cards
-                document.getElementById('totalClientes').innerText = data.totalClientes;
-                document.getElementById('clientesAtivos').innerText = data.clientesAtivos;
-                document.getElementById('receitaMes').innerText = 'R$ ' + data.receitaMes.replace('.', ',');
-                document.getElementById('valorPendente').innerText = 'R$ ' + data.valorPendente.replace('.', ',');
-                document.getElementById('totalServicos').innerText = data.totalServicos;
-                
-                // Atualizar gráfico de receita se houver dados
-                if (data.receitaMensal && data.receitaMensal.length > 0) {
-                    let mesesAtualizados = Array(12).fill(0);
-                    data.receitaMensal.forEach(function(item) {
-                        mesesAtualizados[item.mes - 1] = parseFloat(item.total);
-                    });
-                    receitaChart.data.datasets[0].data = mesesAtualizados;
-                    receitaChart.update();
-                }
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Atualizado!',
-                    text: 'Dashboard atualizado com sucesso',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('totalClientes').innerText = data.totalClientes;
+            document.getElementById('clientesAtivos').innerText = data.clientesAtivos;
+            document.getElementById('receitaMes').innerText = 'R$ ' + data.receitaMes;
+            document.getElementById('valorPendente').innerText = 'R$ ' + data.valorPendente;
+            document.getElementById('totalServicos').innerText = data.totalServicos;
             Swal.fire({
-                icon: 'error',
-                title: 'Erro!',
-                text: 'Erro ao atualizar dashboard',
-                timer: 2000,
+                icon: 'success',
+                title: 'Atualizado!',
+                text: 'Dashboard atualizado com sucesso',
+                timer: 1500,
                 showConfirmButton: false
             });
-        });
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+    });
 }
 
 // Auto-atualizar a cada 30 segundos
