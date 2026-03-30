@@ -24,19 +24,18 @@ try {
     }
     
     $id = $data['id'];
-    $usuario_id = $_SESSION['usuario_id'];
     
-    // Verificar se a tarefa existe e pertence ao usuário
-    $stmt = $conn->prepare("SELECT id FROM agenda WHERE id = ? AND usuario_id = ?");
-    $stmt->execute([$id, $usuario_id]);
+    // Verificar se a tarefa existe (compartilhado - qualquer usuário pode deletar)
+    $stmt = $conn->prepare("SELECT id FROM agenda WHERE id = ?");
+    $stmt->execute([$id]);
     
     if ($stmt->rowCount() == 0) {
-        throw new Exception("Tarefa não encontrada ou você não tem permissão para excluí-la.");
+        throw new Exception("Tarefa não encontrada.");
     }
     
     // Excluir a tarefa
-    $stmt = $conn->prepare("DELETE FROM agenda WHERE id = ? AND usuario_id = ?");
-    $stmt->execute([$id, $usuario_id]);
+    $stmt = $conn->prepare("DELETE FROM agenda WHERE id = ?");
+    $stmt->execute([$id]);
     
     echo json_encode([
         "status" => "success",
