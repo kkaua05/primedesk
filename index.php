@@ -1,12 +1,15 @@
 <?php
+// Iniciar sessão apenas se não existir
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Incluir verificação de sessão (contém as funções)
 require_once 'includes/verificar_sessao.php';
 
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
+// Verificar permissão da página
 if (!verificarPermissao($page)) {
     echo "<script>
     Swal.fire({
@@ -48,15 +51,15 @@ switch($page) {
     case 'relatorios':
         include 'pages/relatorios.php';
         break;
+    case 'relatorio_parcelas':  // ✅ NOVO CASE ADICIONADO
+        include 'pages/relatorio_parcelas.php';
+        break;
     case 'agenda':
         include 'pages/agenda.php';
         break;
-    case 'usuarios':
-        include 'pages/usuarios.php';
-        break;
     default:
         include 'pages/dashboard.php';
-        break;
+        break;  // ✅ BREAK ADICIONADO
 }
 
 include 'includes/footer.php';
