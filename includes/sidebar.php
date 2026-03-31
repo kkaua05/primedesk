@@ -33,18 +33,24 @@ $usuarioNivel = $_SESSION['usuario_nivel'] ?? 'Funcionario';
         </li>
         <?php if ($usuarioNivel === 'Administrador'): ?>
         <li>
-            <a href="index.php?page=relatorios" class="<?php echo ($page == 'relatorios') ? 'active' : ''; ?>">
-                <i class="fas fa-file-alt"></i>
+                <a href="index.php?page=relatorios" class="<?php echo ($page == 'relatorios') ? 'active' : ''; ?>">
+            <i class="fas fa-file-alt"></i>
                 <span>Relatórios</span>
-            </a>
+                </a>
         </li>
-        <li>
-            <a href="index.php?page=usuarios" class="<?php echo ($page == 'usuarios') ? 'active' : ''; ?>">
-                <i class="fas fa-users-cog"></i>
-                <span>Usuários</span>
+    <li>
+            <a href="index.php?page=relatorio_parcelas" class="<?php echo ($page == 'relatorio_parcelas') ? 'active' : ''; ?>">
+                <i class="fas fa-layer-group"></i>
+                <span>Parcelas</span>
             </a>
-        </li>
-        <?php endif; ?>
+</li>
+<li>
+    <a href="index.php?page=agenda" class="<?php echo ($page == 'agenda') ? 'active' : ''; ?>">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Agenda</span>
+    </a>
+</li>
+<?php endif; ?>
     </ul>
     <div class="sidebar-footer">
         <p>&copy; 2026 PrimeDesk</p>
